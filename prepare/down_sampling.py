@@ -13,13 +13,13 @@ import os
 if __name__ == "__main__":
     
     # wav 파일이 전개된 디렉토리
-    original_wav_dir = 'D:/github/speech_recognition/data/original/jsut_ver1.1/basic5000/wav'
+    original_wav_dir = 'D:/github/data/original/jsut_ver1.1/basic5000/wav'
 
     # 포맷 변환한 wav파일을 출력하는 디렉토리
-    out_wav_dir = 'D:/github/speech_recognition/data/wav'
+    out_wav_dir = 'D:/github/data/wav'
 
     # wav 데이터 라벨을 저장하는 디렉토리
-    out_scp_dir = 'D:/github/speech_recognition/data/label/all'
+    out_scp_dir = 'D:/github/data/label/all'
 
     # 출력 디렉토리가 없는 경우 작성
     os.makedirs(out_wav_dir, exist_ok=True)

@@ -13,11 +13,10 @@ import os
 if __name__ == "__main__":
     
     # 다운로드한 라벨데이터(yaml형식)
-    original_label = \
-      'D:/github/speech_recognition/data/original/jsut-label-master/text_kana/basic5000.yaml'
+    original_label = 'D:/github/data/original/jsut-label-master/text_kana/basic5000.yaml'
 
     # 라벨 리스트를 격납하는 장소
-    out_label_dir = 'D:/github/speech_recognition/data/label/all'
+    out_label_dir = 'D:/github/data/label/all'
 
     # 출력 디렉터리가 없는 경우 작성
     os.makedirs(out_label_dir, exist_ok=True)
