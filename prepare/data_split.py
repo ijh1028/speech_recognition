@@ -13,16 +13,16 @@ import os
 if __name__ == "__main__":
     
     # 전체 데이터의 저장 위치
-    all_dir = '../data/label/all'
+    all_dir = 'D:/github/data/label/all'
 
     # 평가 데이터 출력
-    out_eval_dir = '../data/label/test'
+    out_eval_dir = 'D:/github/data/label/test'
     # 개발 데이터 출력
-    out_dev_dir = '../data/label/dev'
+    out_dev_dir = 'D:/github/data/label/dev'
     # 학습 데이터(소) 출력
-    out_train_small_dir = '../data/label/train_small'
+    out_train_small_dir = 'D:/github/data/label/train_small'
     # 학습 데이터(대) 출력
-    out_train_large_dir = '../data/label/train_large'
+    out_train_large_dir = 'D:/github/data/label/train_large'
 
     # 각 출력 디렉토리가 존재하지 않는 경우 작성
     for out_dir in [out_eval_dir, out_dev_dir, 
