@@ -17,7 +17,7 @@ import os
 if __name__ == "__main__":
     
     # 데이터 저장 위치
-    data_dir = 'D:/github/speech_recognition/data/original'
+    data_dir = 'D:/github/data/original'
 
     # 디렉토리 data_dir가 존재하지 않으면 작성
     os.makedirs(data_dir, exist_ok=True)
