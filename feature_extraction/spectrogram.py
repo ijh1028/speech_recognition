@@ -32,7 +32,7 @@ if __name__ == "__main__":
         fft_size *= 2
 
     # 단시간 푸리에 변환을 했을 때의 총 프레임 수를 계산
-    num_frames =(num_samples - frame_size) // frame_shift + 1
+    num_frames = (num_samples - frame_size) // frame_shift + 1
 
     # 스펙트로그램 행렬 준비
     spectrogram = np.zeros((num_frames, int(fft_size/2) + 1))
@@ -77,17 +77,17 @@ if __name__ == "__main__":
     # 2분할한 시각화 영역의 하단에 스펙트로그램을 표시
     plt.subplot(2, 1, 2)
     # 스펙트록램의 최대치를 0에 맞춰 color map 범위 조정
-    spectrogram = np.max(spectrogram)
+    spectrogram -= np.max(spectrogram)
     vmax = np.abs(np.min(spectrogram)) * 0.0
-    vmin = np.abs(np.min(spectrogram)) * 0.7
+    vmin = - np.abs(np.min(spectrogram)) * 0.7
     # 히스토그램 시각화
-    plt.imshow(spectrogram.T[-1::-1,:],
+    plt.imshow(spectrogram.T[-1::-1,:],           
                extent = [0, num_samples / sample_frequency,
                          0, sample_frequency / 2],
-                         camp = 'gray',
-                         vmax = vmax,
-                         vmin = vmin,
-                         aspect = 'auto')
+               cmap = 'gray',
+               vmax = vmax,
+               vmin = vmin,
+               aspect = 'auto')
     # 그림 제목, x축과 y축 라벨 정의
     plt.title('spectrogram')
     plt.xlabel('Time [sec]')
