@@ -6,7 +6,7 @@ import sys
 class FeatureExtractor():
     ''' 특징값(FBANK, MFCC)을 추출하는 클래스
     sample_frequency : 입력 파형 샘플링 주파수[Hz]
-    frame_size : 프레임 사이즈[msec]
+    frame_length : 프레임 사이즈[msec]
     frame_shift : 분석 간격(프레임 시프트)[msec]
     num_mel_bins : Mel 필터 뱅크 수 (=FBANK 특징 차원 수)
     num_ceps : MFCC 특징 차원 수(0차원 포함)
@@ -17,15 +17,20 @@ class FeatureExtractor():
     '''
 
     # 클래스를 불러온 시점에서 최초 1회 실행되는 함수
-    def __init__(self, sample_frequency=16000,
-                 frame_size=25, frame_shift=10,
-                 num_mel_bins=23, num_ceps=13,
-                 lifter_coef=22, low_frequence=20,
-                 high_frequence=8000, dither=1.0):
+    def __init__(self, 
+                 sample_frequency=16000, 
+                 frame_length=25, 
+                 frame_shift=10, 
+                 num_mel_bins=23, 
+                 num_ceps=13, 
+                 lifter_coef=22, 
+                 low_frequency=20, 
+                 high_frequency=8000, 
+                 dither=1.0):
         # 샘플링 주파수[Hz]
         self.sample_freq = sample_frequency
         # 프레임 사이즈를 msec에서 샘플 수로 변환
-        self.frame_size = int(sample_frequency * frame_size * 0.001)
+        self.frame_size = int(sample_frequency * frame_length * 0.001)
         # 프레임 시프트를 msec에서 샘플 수로 변환
         self.frame_shift = int(sample_frequency * frame_shift * 0.001)
         # Mel 필터 뱅크 수
@@ -35,9 +40,9 @@ class FeatureExtractor():
         # 리프터링 매개변수
         self.lifter_coef = lifter_coef
         # 저주파수 대역 제거 절단 주파수[Hz]
-        self.low_frequence = low_frequence
+        self.low_frequency = low_frequency
         # 고주파수 대역 제거 절단 주파수[Hz]
-        self.high_frequence = high_frequence
+        self.high_frequency = high_frequency
         # 디더링 개수
         self.dither_coef = dither
 
@@ -49,20 +54,30 @@ class FeatureExtractor():
         # Mel 필터 뱅크를 작성
         self.mel_filter_bank = self.MakeMelFilterBank()
 
+        # 이산 코사인 변환(DCT)의 기저 행렬을 작성
+        self.dct_matrix = self.MakeDCTMatrix()
+
+        # 리프터(lifter)를 작성
+        self.lifter = self.MakeLifter()
+
+
     def Herz2Mel(self, herz):
         ''' 주파수를 헤르츠에서 Mel로 변환한다
         '''
         return (1127.0 * np.log(1.0 + herz / 700))
-    
+
+
     def MakeMelFilterBank(self):
         ''' Mel 필터 뱅크를 생성한다
         '''
         # Mel 축에서 최대 주파수
-        mel_high_freq = self.Herz2Mel(self.high_frequence)
+        mel_high_freq = self.Herz2Mel(self.high_frequency)
         # Meql 축에서 최소 주파수
-        mel_low_freq = self.Herz2Mel(self.low_frequence)
+        mel_low_freq = self.Herz2Mel(self.low_frequency)
         # 최소에서 최대 주파수까지 Mel 축 위에서 동일 간격으로 주파수
-        mel_points = np.linspace(mel_low_freq, mel_high_freq, self.num_mel_bins+2)
+        mel_points = np.linspace(mel_low_freq, 
+                                 mel_high_freq, 
+                                 self.num_mel_bins+2)
         # 파워 스펙트럼 차원 수 = FFT사이즈/ 2 + 1
         dim_spectrum = int(self.fft_size / 2) + 1
 
@@ -84,10 +99,11 @@ class FeatureExtractor():
                     if mel <= center_mel:
                         weight = (mel - left_mel) / (center_mel - left_mel)
                     else:
-                        weight = (mel - left-mel) / (right_mel-center_mel)
+                        weight = (right_mel-mel) / (right_mel-center_mel)
                     mel_filter_bank[m][n] = weight
-
+         
         return mel_filter_bank
+
     
     def ExtractWindow(self, waveform, start_index, num_samples):
         '''
@@ -114,14 +130,14 @@ class FeatureExtractor():
         # 로그 취하기
         log_power = np.log(power)
 
-        # Pre Emphasis(고역 강조)
+        # Pre Emphasis(고역 강조) 
         # window[i] = 1.0 * window[i] - 0.97 * window[i-1]
         window = np.convolve(window,np.array([1.0, -0.97]), mode='same')
-        # numpy.convolve는 0번째 요소가 처리되지 않기
-        # (window[i-1]가 없기) 떄문에 window[0-1]을 window[0]로 대체하여 처리
+        # nnumpy.convolve는 0번째 요소가 처리되지 않기
+        # (window[i-1]가 없기) 떄문에 window[0-1]을 window[0]로 대체하여 처리，
         window[0] -= 0.97*window[0]
 
-        # 해밍 창 함수를 적용
+        # 해밍 창 함수를 적용 
         # hamming[i] = 0.54 - 0.46 * np.cos(2*np.pi*i / (self.frame_size - 1))
         window *= np.hamming(self.frame_size)
 
@@ -146,7 +162,7 @@ class FeatureExtractor():
         for frame in range(num_frames):
             # 분석 시작 위치는 프레임 번호(0에서 시작) * 프레임 시프트
             start_index = frame * self.frame_shift
-            # 1 프레임 분량의 파형을 추출하여 전처리를 수행하고 로그 파워 값도 얻기
+            # 11 프레임 분량의 파형을 추출하여 전처리를 수행하고 로그 파워 값도 얻기
             window, log_pow = self.ExtractWindow(waveform, start_index, num_samples)
             
             # 파워 스펙트럼 계산
@@ -169,17 +185,60 @@ class FeatureExtractor():
 
         return fbank_features, log_power
 
+
+    def MakeDCTMatrix(self):
+        ''' 이산 코사인 변환(DCT)의 기저 행렬을 작성
+        '''
+        N = self.num_mel_bins
+        # DCT 기저 행렬 (기저수 (=MFCC의 차원수) x FBANK의 차원수)
+        dct_matrix = np.zeros((self.num_ceps,self.num_mel_bins))
+        for k in range(self.num_ceps):
+            if k == 0:
+                dct_matrix[k] = np.ones(self.num_mel_bins) * 1.0 / np.sqrt(N)
+            else:
+                dct_matrix[k] = np.sqrt(2/N) \
+                    * np.cos(((2.0*np.arange(N)+1)*k*np.pi) / (2*N))
+
+        return dct_matrix
+
+
+    def MakeLifter(self):
+        ''' 리프터 계산
+        '''
+        Q = self.lifter_coef
+        I = np.arange(self.num_ceps)
+        lifter = 1.0 + 0.5 * Q * np.sin(np.pi * I / Q)
+        return lifter
+
+
+    def ComputeMFCC(self, waveform):
+        ''' MFCC 계산
+        '''
+        # FBANK 및 로그 파워를 계산
+        fbank, log_power = self.ComputeFBANK(waveform)
+        
+        # DCT의 기저 행렬과의 내적에 의해 DCT를 실시
+        mfcc = np.dot(fbank, self.dct_matrix.T)
+
+        # 리프터 계산
+        mfcc *= self.lifter
+
+        # MFCC의 0차원을 전처리를 하기 전 파형의 로그 파워로 대체
+        mfcc[:,0] = log_power
+
+        return mfcc
+
 if __name__ == "__main__":
     
     # 각 wav 파일 목록과 특징값 출력 위치
-    train_small_wav_scp = '../data/label/train_small/wav.scp'
-    train_small_out_dir = './fbank/train_small'
-    train_large_wav_scp = '../data/label/train_large/wav.scp'
-    train_large_out_dir = './fbank/train_large'
-    dev_wav_scp = '../data/label/dev/wav.scp'
-    dev_out_dir = './fbank/dev'
-    test_wav_scp = '../data/label/test/wav.scp'
-    test_out_dir = './fbank/test'
+    train_small_wav_scp = 'D:/github/data/label/train_small/wav.scp'
+    train_small_out_dir = 'D:/github/data/fbank/train_small'
+    train_large_wav_scp = 'D:/github/data/label/train_large/wav.scp'
+    train_large_out_dir = 'D:/github/data/fbank/train_large'
+    dev_wav_scp = 'D:/github/data/label/dev/wav.scp'
+    dev_out_dir = 'D:/github/data/fbank/dev'
+    test_wav_scp = 'D:/github/data/label/test/wav.scp'
+    test_out_dir = 'D:/github/data/fbank/test'
 
     # 샘플링 주파수 [Hz]
     sample_frequency = 16000
@@ -195,6 +254,9 @@ if __name__ == "__main__":
     num_mel_bins = 40
     # 디더링 개수
     dither=1.0
+
+    # 난수 시드 설정(디더링 처리 결과 재현성 담보)
+    np.random.seed(seed=0)
 
     # 특징값 추출 클래스 불러오기
     feat_extractor = FeatureExtractor(
@@ -223,3 +285,57 @@ if __name__ == "__main__":
 
         # 특징값 파일 경로, 프레임 수, 차원 수를 기록한 리스트
         feat_scp = os.path.join(out_dir, 'feats.scp')
+
+        # 출력 디렉터리가 없는 경우 작성
+        os.makedirs(out_dir, exist_ok=True)
+
+        # wav 목록 읽기 모드
+        # 특징값 리스트를 쓰기 모드로 열기
+        with open(wav_scp, mode='r') as file_wav, \
+                open(feat_scp, mode='w') as file_feat:
+            # wav 목록을 1행씩 읽기
+            for line in file_wav:
+                # 각 행에는 발화 ID와 wav 파일 경로가 스페이스로 구분되어 있음
+                # split 함수를 써서 스페이스 구분 행을 리스트형 변수로 변환
+                parts = line.split()
+                # 0번째가 발화 ID
+                utterance_id = parts[0]
+                # 1번째가 wav 파일 경로
+                wav_path = parts[1]
+                
+                # wav 파일을 읽고 특징값을 계산
+                with wave.open(wav_path) as wav:
+                    # 샘플링 주파수 검사
+                    if wav.getframerate() != sample_frequency:
+                        sys.stderr.write('The expected \
+                            sampling rate is 16000.\n')
+                        exit(1)
+                    # wav 파일이 1채널(모노) 데이터 체크
+                    if wav.getnchannels() != 1:
+                        sys.stderr.write('This program \
+                            supports monaural wav file only.\n')
+                        exit(1)
+                    
+                    num_samples = wav.getnframes()
+                    waveform = wav.readframes(num_samples)
+                    waveform = np.frombuffer(waveform, dtype=np.int16)
+                    
+                    # FBANK를 계산(log_power: 로그 파워 정보도 출력되지만 여기서 사용하지 않기)
+                    fbank, log_power = feat_extractor.ComputeFBANK(waveform)
+
+                # 특징값 프레임 수와 차원 수 구하기
+                (num_frames, num_dims) = np.shape(fbank)
+
+                # 특징값 파일 이름(splitext로 확장자를 제거)
+                out_file = os.path.splitext(os.path.basename(wav_path))[0]
+                out_file = os.path.join(os.path.abspath(out_dir), 
+                                        out_file + '.bin')
+
+                # 데이터를 float 32 형식으로 변환환
+                fbank = fbank.astype(np.float32)
+
+                # 데이터 파일로 출력
+                fbank.tofile(out_file)
+                # 발화 ID,  특징값 파일 경로, 프레임 수, 차원 수를 특징값 리스트에 쓰기
+                file_feat.write("%s %s %d %d\n" %
+                    (utterance_id, out_file, num_frames, num_dims))
