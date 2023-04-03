@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == "__main__":
     # wav 파일 경로
-    wav_file = 'D:/github/data/wav/BASIC5000_0001.wav'
+    wav_file = '../data/wav/BASIC5000_0001.wav'
 
     # 분석 시각 : BASIC5000_001.wav에서는 아래 시각에서 음소 "0"을 발화
     target_time = 0.58
@@ -30,9 +30,9 @@ if __name__ == "__main__":
     target_index = np.int(target_time * sampling_frequency)
 
     # FFT를 실행하는 구간만큼의 파형 데이터 추출
-    frame = waveform [target_index:
-                      target_index + fft_size].copy()
-    
+    frame = waveform[target_index:
+                     target_index + fft_size].copy()
+
     # 해밍 창 함수를 적용
     frame = frame * np.hamming(fft_size)
     # 로그 파워 스펙트럼 계산
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     # 캡스트럼 고차 부분을 0으로 한다
     cepstrum_low = cepstrum.copy()
-    cepstrum_low[(cep_threshold+1):-(cep_threshold)] = 0.0
+    cepstrum_low[(cep_threshold + 1):-(cep_threshold)] = 0.0
 
     # 고차 영역을 제거한 캡스트럼을 다시 푸리에 변환하여 로그 파워 스펙트럼 계산
     log_power_ceplo = np.abs(np.fft.fft(cepstrum_low))
@@ -58,7 +58,7 @@ if __name__ == "__main__":
     log_power_cephi = np.abs(np.fft.fft(cepstrum_high))
 
     # 시각화 그림 영역 지정
-    plt.figure(figsize=(18,10))
+    plt.figure(figsize=(18, 10))
 
     # 로그 파워 스펙트럼 x축(주파수 축)을 생성
     freq_axis = np.arange(fft_size) * sampling_frequency / fft_size
@@ -68,7 +68,7 @@ if __name__ == "__main__":
                                  log_power_ceplo,
                                  log_power_cephi]):
         # 시각화 영역을 3행 2열로 분할하여 1열을 시각화
-        plt.subplot(3, 2, n*2+1)
+        plt.subplot(3, 2, n * 2 + 1)
         plt.plot(freq_axis, log_pow, color='k')
         # x축과 y축 라벨 정의
         plt.xlabel('Frequency [Hz]')
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                                cepstrum_low,
                                cepstrum_high]):
         # 시각화 영역을 3행 2열로 분할하여 2열을 시각화
-        plt.subplot(3, 2, n*2+2)
+        plt.subplot(3, 2, n * 2 + 2)
         # 캡스트럼 실수 부분 시각화 (허수부는 거의 0이다)
         plt.plot(qefr_axis, np.real(cepst), color='k')
         # x축과 y축 라벨 정의화

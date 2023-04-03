@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # 이 책에서 다루는 음성 데이터와 라벨 데이터를 다운로드
 # 데이터는 JSUT 코퍼스를 사용
 # https://sites.google.com/site/shinnosuketakamichi/publication/jsut
@@ -15,9 +13,8 @@ import os
 
 # 메인 함수
 if __name__ == "__main__":
-    
     # 데이터 저장 위치
-    data_dir = 'D:/github/data/original'
+    data_dir = '../data/original'
 
     # 디렉토리 data_dir가 존재하지 않으면 작성
     os.makedirs(data_dir, exist_ok=True)
@@ -25,7 +22,7 @@ if __name__ == "__main__":
     # 음성 파일(jsut 코퍼스.zip형식) 다운로드
     data_archive = os.path.join(data_dir, 'jsut-data.zip')
     print('download jsut-data start')
-    urlretrieve('http://ss-takashi.sakura.ne.jp/corpus/jsut_ver1.1.zip', 
+    urlretrieve('http://ss-takashi.sakura.ne.jp/corpus/jsut_ver1.1.zip',
                 data_archive)
     print('download jsut-data finished')
 

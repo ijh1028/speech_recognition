@@ -1,3 +1,5 @@
+# plot_wave.py : 파일을 열어서 파형을 시각화한다.
+
 # wav 데이터 읽기
 import wave
 
@@ -9,7 +11,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     # wav 파일 열기
-    wav_file = 'D:/github/data/wav/BASIC5000_0001.wav'
+    wav_file = '../data/wav/BASIC5000_0001.wav'
     # 파형을 출력하는 파일(png 파일)
     out_plot = './plot.png'
 
