@@ -1,4 +1,4 @@
-# make_label.py : 라벨 파일 음소 표기를 문자에서 숫자로 변환
+# 00_make_label.py : 라벨 파일 음소 표기를 문자에서 숫자로 변환
 
 import os
 import sys
