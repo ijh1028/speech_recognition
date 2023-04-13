@@ -3,9 +3,9 @@
 import os
 import sys
 
-def phone_to_int(label_str, 
+def phone_to_int(label_str,
                  label_int,
-                 phone_list, 
+                 phone_list,
                  insert_sil=False):
     '''
     음소 목록을 사용하여 라벨 파일 음소를 숫자로 변환
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
     # 개발 데이터 처리 결과 출력처 디렉토리
     out_dev_dir = \
-        './exp/data/dev'   
+        './exp/data/dev'
 
     # 음소 목록
     phone_file = './phones.txt'
@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     # 라벨의 음소 기호를 숫자로 변환하여 출력
     label_int = os.path.join(out_dir, 'text_int')
-    phone_to_int(label_str, 
+    phone_to_int(label_str,
                  label_int,
-                 phone_list, 
+                 phone_list,
                  insert_sil)
